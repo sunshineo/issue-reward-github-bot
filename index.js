@@ -23,14 +23,7 @@ module.exports = app => {
       const parts = full_name.split('/')
       const owner = parts[0]
       const repo = parts[1]
-      
-      await context.github.issues.createLabel({
-        owner: owner,
-        repo: repo,
-        name: 'issue-reward-commented',
-        color: 'e5e5ee', // white ish
-        description: 'Issues that the Reward bot has commented on',
-      })
+
       await context.github.issues.createLabel({
         owner: owner,
         repo: repo,
