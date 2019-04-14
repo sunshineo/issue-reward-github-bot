@@ -77,7 +77,7 @@ module.exports = app => {
       return
     }
     const irId = response.data.objectId
-    const irUrl = process.env.IR_HOST + 'github/' + irId
+    const irUrl = process.env.IR_HOST + 'issue/' + irId
 
     const issueComment = context.issue({
       body: 'Consider add a reward for this issue to incentivize others fix it faster.\n You can do it here: ' + irUrl
