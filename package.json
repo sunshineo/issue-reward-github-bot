@@ -1,12 +1,12 @@
 {
-  "name": "probot-test",
+  "name": "issue-reward-github-bot",
   "version": "1.0.0",
   "description": "A Probot app",
   "author": "Gordon Sun <sunshineo@gmail.com>",
   "license": "ISC",
-  "repository": "https://github.com/probot-test.git",
-  "homepage": "https://github.com/probot-test",
-  "bugs": "https://github.com/probot-test/issues",
+  "repository": "https://github.com/sunshineo/issue-reward-github-bot.git",
+  "homepage": "https://github.com/sunshineo/issue-reward-github-bot",
+  "bugs": "https://github.com/sunshineo/issue-reward-github-bot/issues",
   "keywords": [
     "probot",
     "github",
