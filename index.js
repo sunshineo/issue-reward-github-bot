@@ -57,7 +57,6 @@ module.exports = app => {
     const payload = context.payload
     const issue = payload.issue
     const issueUrl = issue.url
-    console.log(process.env.PARSE_HOST)
     const parseUrl = process.env.PARSE_HOST + 'parse/classes/issue'
     const config = {
       headers: {
