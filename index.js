@@ -56,7 +56,8 @@ module.exports = app => {
     app.log('A new issue was opened')
     const payload = context.payload
     const issue = payload.issue
-    const issueUrl = issue.url
+    const apiUrl = issue.url // https://api.github.com/repos/sunshineo/faqr-portal/issues/23
+    const webUrl = 'https://github.com' + apiUrl.substring(28) // https://github.com/sunshineo/faqr-portal/issues/23
     const parseUrl = process.env.PARSE_HOST + 'parse/classes/issue'
     const config = {
       headers: {
@@ -64,7 +65,7 @@ module.exports = app => {
       }
     }
     const body = {
-      url: issueUrl,
+      url: webUrl,
       totalReward: 0,
     }
     let response
