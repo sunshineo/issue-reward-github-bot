@@ -24,13 +24,36 @@ module.exports = app => {
       const owner = parts[0]
       const repo = parts[1]
 
-      await context.github.issues.createLabel({
-        owner: owner,
-        repo: repo,
-        name: 'has-reward',
-        color: '008672', // green
-        description: 'Issues with reward',
-      })
+      try {
+        await context.github.issues.createLabel({
+          owner: owner,
+          repo: repo,
+          name: 'has-reward',
+          color: '008672', // green
+          description: 'Issues with reward',
+        })
+      }
+      catch(e){
+        // already has the label, no big deal
+      }
+
+      const res = await context.github.issues.listForRepo({owner, repo})
+      const openIssues = res.data
+      for (let i=0; i<openIssues.length; i++){
+        const issue = openIssues[i]
+        const number = issue.number
+        try {
+          await context.github.issues.createComment({
+            owner: owner,
+            repo: repo,
+            number: number,
+            body: 'Consider add a reward for this issue to incentivize others fix it faster.',
+          })
+        }
+        catch(e){
+          // Failed to add comment to an issue
+        }
+      }
     }
   })
 
@@ -46,7 +69,7 @@ module.exports = app => {
     const params = context.repo()
     console.log('repo name: ' + params.repo)
 
-    const issueComment = context.issue({ body: 'Thanks for opening this issue!' })
+    const issueComment = context.issue({ body: 'Consider add a reward for this issue to incentivize others fix it faster.' })
     return context.github.issues.createComment(issueComment)
   })
 
