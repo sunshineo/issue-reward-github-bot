@@ -13,6 +13,34 @@ module.exports = app => {
   createScheduler(app, {
     interval: 24 * 60 * 60 * 1000 // 1 day
   })
+
+  app.on('installation.created', async context => {
+    const payload = context.payload
+    const repositories = payload.repositories
+    for (let i=0; i<repositories.length; i++){
+      const repository = repositories[i]
+      const full_name = repository.full_name
+      const parts = full_name.split('/')
+      const owner = parts[0]
+      const repo = parts[1]
+      
+      await context.github.issues.createLabel({
+        owner: owner,
+        repo: repo,
+        name: 'issue-reward-commented',
+        color: 'e5e5ee', // white ish
+        description: 'Issues that the Reward bot has commented on',
+      })
+      await context.github.issues.createLabel({
+        owner: owner,
+        repo: repo,
+        name: 'has-reward',
+        color: '008672', // green
+        description: 'Issues with reward',
+      })
+    }
+  })
+
   app.on('schedule.repository', context => {
     // this event is triggered on an interval, which is 1 hr by default
     console.log('schedule.repository was triggered')
