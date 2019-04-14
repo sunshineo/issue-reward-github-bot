@@ -1,1 +1,1 @@
-web: probot run index.js
+web: probot run ./index.js
