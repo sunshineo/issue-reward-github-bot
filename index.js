@@ -1,3 +1,5 @@
+const axios = require('axios')
+
 /**
  * This is the main entrypoint to your Probot app
  * @param {import('probot').Application} app
@@ -51,11 +53,36 @@ module.exports = app => {
   })
 
   app.on('issues.opened', async context => {
-    app.log('a new issue was opened')
-    const params = context.repo()
-    app.log('repo name: ' + params.repo)
+    app.log('A new issue was opened')
+    const payload = context.payload
+    const issue = payload.issue
+    const issueUrl = issue.url
+    console.log(process.env.PARSE_HOST)
+    const parseUrl = process.env.PARSE_HOST + 'parse/classes/issue'
+    const config = {
+      headers: {
+        'X-Parse-Application-Id': 'ir'
+      }
+    }
+    const body = {
+      url: issueUrl,
+      totalReward: 0,
+    }
+    let response
+    try{
+      response = await axios.post(parseUrl, body, config)
+    }
+    catch(e){
+      app.log('Failed to post issue to parse.')
+      app.log(e)
+      return
+    }
+    const irId = response.data.objectId
+    const irUrl = process.env.IR_HOST + 'github/' + irId
 
-    const issueComment = context.issue({ body: 'Consider add a reward for this issue to incentivize others fix it faster.' })
+    const issueComment = context.issue({
+      body: 'Consider add a reward for this issue to incentivize others fix it faster.\n You can do it here: ' + irUrl
+    })
     return context.github.issues.createComment(issueComment)
   })
 
