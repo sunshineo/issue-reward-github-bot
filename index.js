@@ -11,7 +11,7 @@ module.exports = app => {
   app.log('Yay, the app was loaded!')
 
   createScheduler(app, {
-    interval: 60 * 1000 // 1 day
+    interval: 24 * 60 * 60 * 1000 // 1 day
   })
   app.on('schedule.repository', context => {
     // this event is triggered on an interval, which is 1 hr by default
