@@ -51,9 +51,7 @@ module.exports = app => {
     }
   }
 
-  app.on('installation.created', async context => {
-    const payload = context.payload
-    const repositories = payload.repositories
+  const initRepositories = async (repositories, context) => {
     for (let i=0; i<repositories.length; i++){
       const repository = repositories[i]
       const full_name = repository.full_name
@@ -72,15 +70,36 @@ module.exports = app => {
       }
       catch(e){
         // already has the label, no big deal
+        console.log('Failed to create label on repository. They may already have one.')
+        console.log(e.errors)
       }
 
-      const res = await context.github.issues.listForRepo({owner, repo})
+      let res
+      try{
+        res = await context.github.issues.listForRepo({owner, repo})
+      }
+      catch(e){
+        console.log('Failed to list all the open issues of the repository.')
+        console.log(e)
+        continue
+      }
+
       const openIssues = res.data
       for (let i=0; i<openIssues.length; i++){
         const issue = openIssues[i]
         await firtComment(issue, context)
       }
     }
+  }
+  app.on('installation.created', async context => {
+    const payload = context.payload
+    const repositories = payload.repositories
+    await initRepositories(repositories, context)
+  })
+  app.on('installation_repositories.added', async context => {
+    const payload = context.payload
+    const repositories = payload.repositories_added
+    await initRepositories(repositories, context)
   })
 
   app.on('issues.opened', async context => {
