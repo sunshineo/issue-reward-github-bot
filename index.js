@@ -12,27 +12,49 @@ module.exports = app => {
   const firtComment = async (issue, context) => {
     const apiUrl = issue.url // https://api.github.com/repos/sunshineo/faqr-portal/issues/23
     const webUrl = 'https://github.com' + apiUrl.substring(28) // https://github.com/sunshineo/faqr-portal/issues/23
-    const parseUrl = process.env.PARSE_HOST + 'parse/classes/issue'
+    const parseIssueClassUrl = process.env.PARSE_HOST + 'parse/classes/issue'
     const config = {
       headers: {
         'X-Parse-Application-Id': 'ir'
       }
     }
-    const body = {
-      url: webUrl,
-      totalReward: 0,
+
+    const query = {
+      url: webUrl
     }
-    let response
-    try{
-      response = await axios.post(parseUrl, body, config)
+    const searchUrl = parseIssueClassUrl + '?where=' + JSON.stringify(query)
+    let searchRes
+    try {
+      searchRes = await axios.get(searchUrl, config)
     }
     catch(e){
-      app.log('Failed to post issue to parse.')
-      app.log(e)
+      console.log('Failed to search issue on parse.')
       return
     }
 
-    const irId = response.data.objectId
+    let irId
+    const existing = searchRes.data.results
+    if (existing.length === 0){
+      const body = {
+        url: webUrl,
+        totalReward: 0,
+      }
+      let response
+      try{
+        response = await axios.post(parseIssueClassUrl, body, config)
+      }
+      catch(e){
+        app.log('Failed to post issue to parse.')
+        app.log(e)
+        return
+      }
+      irId = response.data.objectId
+    }
+    else {
+      const firstExisting = existing[0]
+      irId = firstExisting.objectId
+    }
+    
     const irUrl = process.env.IR_HOST + 'issue/' + irId
     const parts = apiUrl.split('/')
     const owner = parts[4]
