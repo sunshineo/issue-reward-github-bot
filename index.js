@@ -9,6 +9,48 @@ module.exports = app => {
   // Your code here
   app.log('Yay, the app was loaded!')
 
+  const firtComment = async (issue, context) => {
+    const apiUrl = issue.url // https://api.github.com/repos/sunshineo/faqr-portal/issues/23
+    const webUrl = 'https://github.com' + apiUrl.substring(28) // https://github.com/sunshineo/faqr-portal/issues/23
+    const parseUrl = process.env.PARSE_HOST + 'parse/classes/issue'
+    const config = {
+      headers: {
+        'X-Parse-Application-Id': 'ir'
+      }
+    }
+    const body = {
+      url: webUrl,
+      totalReward: 0,
+    }
+    let response
+    try{
+      response = await axios.post(parseUrl, body, config)
+    }
+    catch(e){
+      app.log('Failed to post issue to parse.')
+      app.log(e)
+      return
+    }
+
+    const irId = response.data.objectId
+    const irUrl = process.env.IR_HOST + 'issue/' + irId
+    const parts = apiUrl.split('/')
+    const owner = parts[4]
+    const repo = parts[5]
+    const number = parts[7]
+    try {
+      await context.github.issues.createComment({
+        owner: owner,
+        repo: repo,
+        number: number,
+        body: 'Consider add a reward for this issue to incentivize others fix it faster.\n You can do it here: ' + irUrl
+      })
+    }
+    catch(e){
+      // Failed to add comment to an issue
+    }
+  }
+
   app.on('installation.created', async context => {
     const payload = context.payload
     const repositories = payload.repositories
@@ -36,18 +78,7 @@ module.exports = app => {
       const openIssues = res.data
       for (let i=0; i<openIssues.length; i++){
         const issue = openIssues[i]
-        const number = issue.number
-        try {
-          await context.github.issues.createComment({
-            owner: owner,
-            repo: repo,
-            number: number,
-            body: 'Consider add a reward for this issue to incentivize others fix it faster.',
-          })
-        }
-        catch(e){
-          // Failed to add comment to an issue
-        }
+        await firtComment(issue, context)
       }
     }
   })
@@ -56,34 +87,7 @@ module.exports = app => {
     app.log('A new issue was opened')
     const payload = context.payload
     const issue = payload.issue
-    const apiUrl = issue.url // https://api.github.com/repos/sunshineo/faqr-portal/issues/23
-    const webUrl = 'https://github.com' + apiUrl.substring(28) // https://github.com/sunshineo/faqr-portal/issues/23
-    const parseUrl = process.env.PARSE_HOST + 'parse/classes/issue'
-    const config = {
-      headers: {
-        'X-Parse-Application-Id': 'ir'
-      }
-    }
-    const body = {
-      url: webUrl,
-      totalReward: 0,
-    }
-    let response
-    try{
-      response = await axios.post(parseUrl, body, config)
-    }
-    catch(e){
-      app.log('Failed to post issue to parse.')
-      app.log(e)
-      return
-    }
-    const irId = response.data.objectId
-    const irUrl = process.env.IR_HOST + 'issue/' + irId
-
-    const issueComment = context.issue({
-      body: 'Consider add a reward for this issue to incentivize others fix it faster.\n You can do it here: ' + irUrl
-    })
-    return context.github.issues.createComment(issueComment)
+    await firtComment(issue, context)
   })
 
   // For more information on building apps:
